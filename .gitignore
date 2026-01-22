@@ -1,3 +1,4 @@
 .context/
 **/*.env
-dist/
+**/*dist/
+node_modules/
