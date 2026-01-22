@@ -28,7 +28,7 @@ export const env = new Command()
         }
       }
 
-      console.log("Saved .env file");
+      console.log(`Saved ${result.path}`);
     }))
   .command("list", new Command()
     .description("List configured environments")

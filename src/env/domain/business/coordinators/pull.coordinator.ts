@@ -7,6 +7,7 @@ export interface PullResult {
   content: string;
   fileExists: boolean;
   written: boolean;
+  path: string;
 }
 
 export async function pullEnvironment(envName: string, confirmOverwrite = false): Promise<PullResult> {
@@ -25,10 +26,12 @@ export async function pullEnvironment(envName: string, confirmOverwrite = false)
     // File doesn't exist
   }
 
+  const path = `${Deno.cwd()}/${ENV_FILE}`;
+
   if (fileExists && !confirmOverwrite) {
-    return { content, fileExists: true, written: false };
+    return { content, fileExists: true, written: false, path };
   }
 
   await Deno.writeTextFile(ENV_FILE, content + "\n");
-  return { content, fileExists, written: true };
+  return { content, fileExists, written: true, path };
 }
