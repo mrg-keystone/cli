@@ -1,5 +1,10 @@
-const steps = ["clean", "compile", "generate-package", "install", "clean"];
+import clean from "./clean.ts";
+import compile from "./compile.ts";
+import generatePackage from "./generate-package.ts";
+import install from "./install.ts";
 
-for (const step of steps) {
-  await import(`./${step}.ts`);
-}
+await clean();
+await compile();
+await generatePackage();
+await install();
+await clean();
