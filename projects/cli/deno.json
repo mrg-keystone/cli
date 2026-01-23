@@ -12,7 +12,8 @@
     "#class-validator": "npm:class-validator@0.14.1",
     "#class-transformer": "npm:class-transformer@0.5.1",
     "@env/": "./src/env/",
-    "@init/": "./src/init/"
+    "@init/": "./src/init/",
+    "@prototype/": "./src/prototype/"
   },
   "compilerOptions": {
     "experimentalDecorators": true,

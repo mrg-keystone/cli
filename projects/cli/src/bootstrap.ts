@@ -1,6 +1,7 @@
 import { Command } from "#cliffy/command";
 import { env } from "@env/mod.ts";
 import { init } from "@init/mod.ts";
+import { prototype } from "@prototype/mod.ts";
 
 await new Command()
   .name("keystone")
@@ -11,4 +12,5 @@ await new Command()
   })
   .command("env", env)
   .command("init", init)
+  .command("prototype", prototype)
   .parse(Deno.args);
