@@ -1,0 +1,22 @@
+{
+  "name": "@mrg-keystone/cli",
+  "version": "0.1.7",
+  "lock": false,
+  "tasks": {
+    "keystone": "deno run -A src/bootstrap.ts",
+    "deploy": "deno run -A deploy/index.ts"
+  },
+  "imports": {
+    "#cliffy/command": "jsr:@cliffy/command@1.0.0-rc.7",
+    "#cliffy/prompt": "jsr:@cliffy/prompt@1.0.0-rc.7",
+    "#class-validator": "npm:class-validator@0.14.1",
+    "#class-transformer": "npm:class-transformer@0.5.1",
+    "@env/": "./src/env/",
+    "@init/": "./src/init/"
+  },
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false
+  }
+}
