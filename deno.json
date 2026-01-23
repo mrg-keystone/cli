@@ -1,5 +1,8 @@
 {
   "name": "@mrg-keystone/clients",
   "lock": false,
+  "tasks": {
+    "test": "deno test **/domain/business/**/test.ts"
+  },
   "workspace": ["projects/cli"]
 }
