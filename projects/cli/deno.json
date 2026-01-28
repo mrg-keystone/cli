@@ -1,6 +1,6 @@
 {
   "name": "@mrg-keystone/cli",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "lock": false,
   "tasks": {
     "keystone": "deno run -A src/bootstrap.ts",

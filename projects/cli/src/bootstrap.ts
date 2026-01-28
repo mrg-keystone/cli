@@ -10,8 +10,12 @@ import { update } from "@update/mod.ts";
 
 await new Command()
   .name("keystone")
-  .description("Keystone CLI")
-  .version("0.1.22")
+  .description("CLI for managing keystone-suite development workflow")
+  .version("0.1.23")
+  .example("Get started", "keystone repo init")
+  .example("Check setup", "keystone config doctor")
+  .example("Start dev server", "keystone dev")
+  .example("Deploy project", "keystone deploy")
   .action(function () {
     this.showHelp();
   })
