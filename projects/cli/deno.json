@@ -1,6 +1,6 @@
 {
   "name": "@mrg-keystone/cli",
-  "version": "0.1.11",
+  "version": "0.1.22",
   "lock": false,
   "tasks": {
     "keystone": "deno run -A src/bootstrap.ts",
@@ -11,9 +11,15 @@
     "#cliffy/prompt": "jsr:@cliffy/prompt@1.0.0-rc.7",
     "#class-validator": "npm:class-validator@0.14.1",
     "#class-transformer": "npm:class-transformer@0.5.1",
+    "@config/": "./src/config/",
+    "@deploy/": "./src/deploy/",
+    "@dev/": "./src/dev/",
     "@env/": "./src/env/",
-    "@init/": "./src/init/",
-    "@prototype/": "./src/prototype/"
+    "@plan/": "./src/plan/",
+    "@prototype/": "./src/prototype/",
+    "@repo/": "./src/repo/",
+    "@shared/": "./src/shared/",
+    "@update/": "./src/update/"
   },
   "compilerOptions": {
     "experimentalDecorators": true,
