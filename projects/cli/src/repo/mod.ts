@@ -12,6 +12,7 @@ export const repo = new Command()
     "bind",
     new Command()
       .description("Bind existing keystone-suite in current directory to config")
+      .example("Bind current directory", "keystone repo bind")
       .action(async () => {
         await bindRepo();
       })
@@ -22,6 +23,9 @@ export const repo = new Command()
       .description("Initialize keystone-suite by cloning all repositories")
       .option("-f, --force", "Force init even if already initialized")
       .arguments("[path:string]")
+      .example("Init in current directory", "keystone repo init")
+      .example("Init in specific path", "keystone repo init ~/projects")
+      .example("Force re-init", "keystone repo init -f")
       .action(async ({ force }, path) => {
         const targetPath = path ?? Deno.cwd();
         await initKeystoneSuite(targetPath, force ?? false);
@@ -32,6 +36,7 @@ export const repo = new Command()
     new Command()
       .description("Move keystone-suite to a different location")
       .arguments("<path:string>")
+      .example("Move to new location", "keystone repo move ~/new-location")
       .action(async (_, path) => {
         await moveRepo(path);
       })
