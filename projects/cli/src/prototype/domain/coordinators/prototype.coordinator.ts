@@ -22,26 +22,29 @@ export async function snapshotRepo(
 ): Promise<void> {
   const prototypeRoot = await findPrototypeRoot();
   if (!prototypeRoot) {
-    throw new Error(
-      "To use this command, you must be in the keystone-prototypes directory",
-    );
+    console.error("This command must be run from within the keystone-prototypes directory.");
+    console.error("\nMake sure you're in the prototypes repo or one of its subdirectories.");
+    Deno.exit(1);
   }
+
+  console.log(`Creating snapshot of ${alias}...\n`);
 
   const url = getRepoUrl(alias);
   const snapshotPath = buildSnapshotPath(prototypeRoot);
 
-  // Clone the repo
-  console.log(`Cloning ${alias}...`);
+  // Step 1: Clone the repo
+  console.log("Step 1/4: Cloning repository...");
   await removeDirectory(snapshotPath);
   await cloneRepo(url, snapshotPath);
 
-  // Get the head hash before removing .git
+  // Step 2: Get commit hash
+  console.log("Step 2/4: Recording commit hash...");
   const hash = await getHeadHash(snapshotPath);
 
-  // Remove .git directory
+  // Step 3: Clean up and prepare workspace
+  console.log("Step 3/4: Preparing workspace...");
   await removeDirectory(`${snapshotPath}/.git`);
 
-  // Get workspaces from cloned repo and update prototype's deno.json
   const snapshotDenoJson = await readDenoJson(snapshotPath);
   const snapshotWorkspaces = (snapshotDenoJson.workspace as string[]) ?? [];
   const workspaces = buildWorkspacePaths(snapshotWorkspaces);
@@ -51,14 +54,17 @@ export async function snapshotRepo(
   prototypeDenoJson.imports = snapshotDenoJson.imports;
   await writeDenoJson(prototypeRoot, prototypeDenoJson);
 
-  // Create commit
+  // Step 4: Create commit
+  console.log("Step 4/4: Creating commit...");
   const message = buildCommitMessage(alias, hash, label);
-  // Clean up src directory after commit
   const srcPath = `${prototypeRoot}/src`;
   await removeDirectory(srcPath, "replace");
-  console.log("Cleaned src directory");
   await Deno.remove(`${snapshotPath}/deno.json`);
-
   await createCommit(message, prototypeRoot);
-  console.log(`Snapshot complete: ${alias} @ ${hash}`);
+
+  console.log("\n" + "─".repeat(50));
+  console.log(`\nSnapshot complete!`);
+  console.log(`  Repo:   ${alias}`);
+  console.log(`  Commit: ${hash}`);
+  console.log(`  Label:  ${label}`);
 }
