@@ -6,6 +6,9 @@ import { Config } from "@env/dto/config.ts";
 const SERVER = "envault-deploy.ngrok.app";
 
 export async function setupEnvironment(envId: number, key: string, envName: string): Promise<void> {
+  console.log(`Setting up environment "${envName}"...`);
+  console.log("Validating credentials with server...");
+
   const result = await setup(SERVER, envId, key);
   const config = plainToInstance(Config, {
     host: SERVER,
@@ -14,5 +17,10 @@ export async function setupEnvironment(envId: number, key: string, envName: stri
     authToken: result.authToken,
   });
   await setConfig(config);
-  console.log(`Saved config for "${envName}"`);
+
+  console.log(`\nEnvironment "${envName}" configured successfully!`);
+  console.log(`  - Environment ID: ${envId}`);
+  console.log(`  - Variables available: ${result.app.variables.length}`);
+  console.log(`\nTo pull variables, run:`);
+  console.log(`  keystone env pull ${envName}`);
 }
