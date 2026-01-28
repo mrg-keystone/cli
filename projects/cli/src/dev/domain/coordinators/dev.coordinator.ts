@@ -1,5 +1,6 @@
 import { Select } from "#cliffy/prompt";
 import { getConfig } from "@shared/config/config.mod.ts";
+import { openInEditor as openFileInEditor } from "@shared/editor.mod.ts";
 
 async function listDirs(path: string): Promise<string[]> {
   const dirs: string[] = [];
@@ -15,37 +16,28 @@ async function listDirs(path: string): Promise<string[]> {
   return dirs.sort();
 }
 
-function getEditorCommand(): { cmd: string; args: string[] } {
-  const editor = Deno.env.get("EDITOR");
-  if (editor) {
-    return { cmd: editor, args: [] };
-  }
-
-  const os = Deno.build.os;
-  if (os === "darwin") return { cmd: "open", args: [] };
-  if (os === "linux") return { cmd: "xdg-open", args: [] };
-  if (os === "windows") return { cmd: "cmd", args: ["/c", "start"] };
-
-  return { cmd: "code", args: [] };
-}
-
 export async function openInEditor(repo?: string): Promise<void> {
   const config = await getConfig();
 
   if (!config.repoPath) {
-    console.error("No repo path configured. Run 'keystone repo init' first.");
+    console.error("No repo path configured.");
+    console.error("\nTo set up your repo, run:");
+    console.error("  keystone repo init");
     Deno.exit(1);
   }
+
+  console.log("Open Repository in Editor\n");
 
   let selectedRepo = repo;
   if (!selectedRepo) {
     const repos = await listDirs(config.repoPath);
     if (repos.length === 0) {
       console.error("No repos found in keystone-suite.");
+      console.error(`Looked in: ${config.repoPath}`);
       Deno.exit(1);
     }
     selectedRepo = await Select.prompt({
-      message: "Select a repo",
+      message: "Which repo do you want to open?",
       options: repos,
     });
   }
@@ -56,29 +48,24 @@ export async function openInEditor(repo?: string): Promise<void> {
     await Deno.stat(repoPath);
   } catch {
     console.error(`Repo not found: ${selectedRepo}`);
+    console.error(`Looked in: ${repoPath}`);
     Deno.exit(1);
   }
 
-  const { cmd, args } = getEditorCommand();
-
-  console.log(`Opening ${selectedRepo} in editor...`);
-
-  const command = new Deno.Command(cmd, {
-    args: [...args, repoPath],
-    stdout: "inherit",
-    stderr: "inherit",
-  });
-
-  await command.output();
+  await openFileInEditor(repoPath, `${selectedRepo} repository`);
 }
 
 export async function runDev(repo?: string, project?: string): Promise<void> {
   const config = await getConfig();
 
   if (!config.repoPath) {
-    console.error("No repo path configured. Run 'keystone repo init' first.");
+    console.error("No repo path configured.");
+    console.error("\nTo set up your repo, run:");
+    console.error("  keystone repo init");
     Deno.exit(1);
   }
+
+  console.log("Start Development Server\n");
 
   // Select repo
   let selectedRepo = repo;
@@ -86,10 +73,11 @@ export async function runDev(repo?: string, project?: string): Promise<void> {
     const repos = await listDirs(config.repoPath);
     if (repos.length === 0) {
       console.error("No repos found in keystone-suite.");
+      console.error(`Looked in: ${config.repoPath}`);
       Deno.exit(1);
     }
     selectedRepo = await Select.prompt({
-      message: "Select a repo",
+      message: "Which repo contains the project?",
       options: repos,
     });
   }
@@ -103,10 +91,11 @@ export async function runDev(repo?: string, project?: string): Promise<void> {
     const projects = await listDirs(projectsPath);
     if (projects.length === 0) {
       console.error(`No projects found in ${selectedRepo}/projects.`);
+      console.error("\nMake sure the repo has a 'projects' directory.");
       Deno.exit(1);
     }
     selectedProject = await Select.prompt({
-      message: "Select a project",
+      message: "Which project do you want to run?",
       options: projects,
     });
   }
@@ -117,15 +106,24 @@ export async function runDev(repo?: string, project?: string): Promise<void> {
   try {
     const denoJson = JSON.parse(await Deno.readTextFile(denoJsonPath));
     if (!denoJson.tasks?.serve) {
-      console.error(`No serve task found in ${selectedRepo}/projects/${selectedProject}/deno.json`);
+      console.error(`No 'serve' task found in deno.json`);
+      console.error(`\nFile: ${denoJsonPath}`);
+      console.error("\nAdd a serve task to the project's deno.json:");
+      console.error('  "tasks": { "serve": "your-dev-server-command" }');
       Deno.exit(1);
     }
-  } catch {
-    console.error(`No deno.json found in ${selectedRepo}/projects/${selectedProject}`);
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) {
+      console.error(`No deno.json found in ${selectedRepo}/projects/${selectedProject}`);
+      console.error("\nMake sure this is a valid Deno project.");
+    } else {
+      console.error(`Error reading deno.json: ${e}`);
+    }
     Deno.exit(1);
   }
 
   console.log(`Starting ${selectedRepo}/${selectedProject}...`);
+  console.log(`Running: deno task serve\n`);
 
   const command = new Deno.Command("deno", {
     args: ["task", "serve"],
@@ -138,7 +136,10 @@ export async function runDev(repo?: string, project?: string): Promise<void> {
   const { code } = await command.output();
 
   if (code !== 0) {
-    console.error("Dev server exited with error.");
+    console.error(`\nDev server exited with code ${code}`);
+    console.error("Check the output above for error details.");
     Deno.exit(1);
   }
+
+  console.log("\nDev server stopped.");
 }
