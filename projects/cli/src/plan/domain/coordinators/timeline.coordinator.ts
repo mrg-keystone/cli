@@ -1,3 +1,4 @@
+import { Confirm } from "#cliffy/prompt";
 import { getConfig } from "@shared/config/config.mod.ts";
 
 async function isCalcurseInstalled(): Promise<boolean> {
@@ -22,8 +23,6 @@ async function tryInstall(cmd: string, args: string[]): Promise<boolean> {
 }
 
 async function installCalcurse(): Promise<boolean> {
-  console.log("Installing calcurse...");
-
   const os = Deno.build.os;
 
   if (os === "darwin") {
@@ -31,22 +30,16 @@ async function installCalcurse(): Promise<boolean> {
   }
 
   if (os === "linux") {
-    // Try apt first (Debian/Ubuntu)
     if (await tryInstall("apt", ["install", "-y", "calcurse"])) return true;
-    // Try dnf (Fedora/RHEL)
     if (await tryInstall("dnf", ["install", "-y", "calcurse"])) return true;
-    // Try pacman (Arch)
     if (await tryInstall("pacman", ["-S", "--noconfirm", "calcurse"])) return true;
   }
 
   if (os === "windows") {
-    // Try scoop
     if (await tryInstall("scoop", ["install", "calcurse"])) return true;
-    // Try chocolatey
     if (await tryInstall("choco", ["install", "calcurse", "-y"])) return true;
   }
 
-  console.error("Could not auto-install calcurse. Please install it manually.");
   return false;
 }
 
@@ -54,19 +47,46 @@ export async function openTimeline(): Promise<void> {
   const config = await getConfig();
 
   if (!config.repoPath) {
-    console.error("No repo path configured. Run 'keystone repo init' first.");
+    console.error("No repo path configured.");
+    console.error("\nTo set up your repo, run:");
+    console.error("  keystone repo init");
     Deno.exit(1);
   }
 
   if (!await isCalcurseInstalled()) {
+    console.log("Calcurse is a terminal-based calendar application used for planning.");
+    console.log("It is not currently installed on your system.\n");
+
+    const confirm = await Confirm.prompt({
+      message: "Would you like to install calcurse?",
+      default: true,
+    });
+
+    if (!confirm) {
+      console.log("\nYou can install calcurse manually:");
+      console.log("  macOS:  brew install calcurse");
+      console.log("  Ubuntu: apt install calcurse");
+      console.log("  Arch:   pacman -S calcurse");
+      Deno.exit(0);
+    }
+
+    console.log("\nInstalling calcurse...");
     const success = await installCalcurse();
     if (!success) {
-      console.error("Failed to install calcurse.");
+      console.error("\nFailed to install calcurse automatically.");
+      console.error("Please install it manually:");
+      console.error("  macOS:  brew install calcurse");
+      console.error("  Ubuntu: apt install calcurse");
+      console.error("  Arch:   pacman -S calcurse");
       Deno.exit(1);
     }
+    console.log("Calcurse installed successfully!\n");
   }
 
   const planningDir = `${config.repoPath}/docs/planning`;
+
+  console.log("Opening planning timeline...");
+  console.log(`Data directory: ${planningDir}\n`);
 
   const command = new Deno.Command("calcurse", {
     args: ["-D", planningDir],
@@ -78,7 +98,8 @@ export async function openTimeline(): Promise<void> {
   const { code } = await command.output();
 
   if (code !== 0) {
-    console.error("Failed to open calcurse.");
+    console.error("\nCalcurse exited with an error.");
+    console.error("Make sure the planning directory exists and is accessible.");
     Deno.exit(1);
   }
 }
