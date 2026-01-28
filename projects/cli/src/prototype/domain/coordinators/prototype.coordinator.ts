@@ -32,6 +32,7 @@ export async function snapshotRepo(
 
   // Clone the repo
   console.log(`Cloning ${alias}...`);
+  await removeDirectory(snapshotPath);
   await cloneRepo(url, snapshotPath);
 
   // Get the head hash before removing .git
@@ -47,6 +48,7 @@ export async function snapshotRepo(
 
   const prototypeDenoJson = await readDenoJson(prototypeRoot);
   prototypeDenoJson.workspace = workspaces;
+  prototypeDenoJson.imports = snapshotDenoJson.imports;
   await writeDenoJson(prototypeRoot, prototypeDenoJson);
 
   // Create commit
