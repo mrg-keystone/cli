@@ -19,9 +19,13 @@ export async function deploy(repo?: string, project?: string): Promise<void> {
   const config = await getConfig();
 
   if (!config.repoPath) {
-    console.error("No repo path configured. Run 'keystone repo init' first.");
+    console.error("No repo path configured.");
+    console.error("\nTo set up your repo, run:");
+    console.error("  keystone repo init");
     Deno.exit(1);
   }
+
+  console.log("Deploy Project\n");
 
   // Select repo
   let selectedRepo = repo;
@@ -29,10 +33,11 @@ export async function deploy(repo?: string, project?: string): Promise<void> {
     const repos = await listDirs(config.repoPath);
     if (repos.length === 0) {
       console.error("No repos found in keystone-suite.");
+      console.error(`Looked in: ${config.repoPath}`);
       Deno.exit(1);
     }
     selectedRepo = await Select.prompt({
-      message: "Select a repo",
+      message: "Which repo contains the project?",
       options: repos,
     });
   }
@@ -46,10 +51,11 @@ export async function deploy(repo?: string, project?: string): Promise<void> {
     const projects = await listDirs(projectsPath);
     if (projects.length === 0) {
       console.error(`No projects found in ${selectedRepo}/projects.`);
+      console.error("\nMake sure the repo has a 'projects' directory with deployable projects.");
       Deno.exit(1);
     }
     selectedProject = await Select.prompt({
-      message: "Select a project",
+      message: "Which project do you want to deploy?",
       options: projects,
     });
   }
@@ -60,15 +66,24 @@ export async function deploy(repo?: string, project?: string): Promise<void> {
   try {
     const denoJson = JSON.parse(await Deno.readTextFile(denoJsonPath));
     if (!denoJson.tasks?.deploy) {
-      console.error(`No deploy task found in ${selectedRepo}/projects/${selectedProject}/deno.json`);
+      console.error(`No 'deploy' task found in deno.json`);
+      console.error(`\nFile: ${denoJsonPath}`);
+      console.error("\nAdd a deploy task to the project's deno.json:");
+      console.error('  "tasks": { "deploy": "your-deploy-command" }');
       Deno.exit(1);
     }
-  } catch {
-    console.error(`No deno.json found in ${selectedRepo}/projects/${selectedProject}`);
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) {
+      console.error(`No deno.json found in ${selectedRepo}/projects/${selectedProject}`);
+      console.error("\nMake sure this is a valid Deno project.");
+    } else {
+      console.error(`Error reading deno.json: ${e}`);
+    }
     Deno.exit(1);
   }
 
-  console.log(`Deploying ${selectedRepo}/${selectedProject}...`);
+  console.log(`\nDeploying ${selectedRepo}/${selectedProject}...`);
+  console.log(`Running: deno task deploy\n`);
 
   const command = new Deno.Command("deno", {
     args: ["task", "deploy"],
@@ -81,7 +96,10 @@ export async function deploy(repo?: string, project?: string): Promise<void> {
   const { code } = await command.output();
 
   if (code !== 0) {
-    console.error("Deploy failed.");
+    console.error(`\nDeploy failed with exit code ${code}`);
+    console.error("Check the output above for error details.");
     Deno.exit(1);
   }
+
+  console.log(`\nDeployment of ${selectedRepo}/${selectedProject} completed successfully!`);
 }
