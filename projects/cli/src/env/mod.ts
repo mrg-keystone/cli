@@ -3,6 +3,7 @@ import { Confirm } from "#cliffy/prompt";
 import { setupEnvironment } from "@env/domain/business/coordinators/setup.coordinator.ts";
 import { pullEnvironment } from "@env/domain/business/coordinators/pull.coordinator.ts";
 import { listEnvironments } from "@env/domain/business/coordinators/list.coordinator.ts";
+import { openEnvaultUI } from "@env/domain/business/coordinators/ui.coordinator.ts";
 
 export const env = new Command()
   .description("Manage environment variables from envault")
@@ -45,4 +46,10 @@ export const env = new Command()
     .example("List all", "keystone env list")
     .action(async () => {
       await listEnvironments();
+    }))
+  .command("ui", new Command()
+    .description("Open envault dashboard in browser")
+    .example("Open envault", "keystone env ui")
+    .action(async () => {
+      await openEnvaultUI();
     }));
