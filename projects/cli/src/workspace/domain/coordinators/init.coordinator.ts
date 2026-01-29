@@ -1,7 +1,11 @@
-import { cloneRepo } from "@repo/domain/data/git-client.mod.ts";
-import { createDirectory } from "@repo/domain/data/file-system.mod.ts";
-import { REPOS, buildTargetDir, buildCloneRequests } from "@repo/domain/business/clone-builder.mod.ts";
+import { cloneRepo } from "@workspace/domain/data/repo-git-client.mod.ts";
+import { REPOS, buildTargetDir, buildCloneRequests } from "@workspace/domain/business/clone-builder.mod.ts";
 import { getConfig, updateConfig } from "@shared/config/config.mod.ts";
+import { installCompletion } from "@workspace/domain/coordinators/completion.coordinator.ts";
+
+async function createDirectory(path: string): Promise<void> {
+  await Deno.mkdir(path, { recursive: true });
+}
 
 export async function initKeystoneSuite(basePath: string, force: boolean): Promise<void> {
   const config = await getConfig();
@@ -9,8 +13,8 @@ export async function initKeystoneSuite(basePath: string, force: boolean): Promi
   if (config.repoPath && !force) {
     console.error(`Repo already initialized at ${config.repoPath}`);
     console.error("\nOptions:");
-    console.error("  - Use 'keystone repo move <path>' to relocate it");
-    console.error("  - Use 'keystone repo init -f' to force a new initialization");
+    console.error("  - Use 'keystone workspace move <path>' to relocate it");
+    console.error("  - Use 'keystone workspace init -f' to force a new initialization");
     Deno.exit(1);
   }
 
@@ -50,7 +54,12 @@ export async function initKeystoneSuite(basePath: string, force: boolean): Promi
   }
 
   console.log(`\nRepo path saved to config: ${targetDir}`);
+
+  // Install shell completions
+  console.log("\n--- Shell Completions ---");
+  await installCompletion({ silent: true });
+
   console.log("\nNext steps:");
-  console.log("  - Run 'keystone config doctor' to verify your setup");
-  console.log("  - Run 'keystone dev --open' to open a repo in your editor");
+  console.log("  - Run 'keystone workspace doctor' to verify your setup");
+  console.log("  - Run 'keystone open' to open a repo in your editor");
 }

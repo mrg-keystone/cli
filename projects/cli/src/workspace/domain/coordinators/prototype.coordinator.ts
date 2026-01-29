@@ -3,18 +3,18 @@ import {
   buildSnapshotPath,
   buildWorkspacePaths,
   buildCommitMessage,
-} from "@prototype/domain/business/repos.mod.ts";
+} from "@workspace/domain/business/repos.mod.ts";
 import {
   getHeadHash,
   cloneRepo,
   createCommit,
-} from "@prototype/domain/data/git-client.mod.ts";
+} from "@workspace/domain/data/git-client.mod.ts";
 import {
   findPrototypeRoot,
   readDenoJson,
   writeDenoJson,
   removeDirectory,
-} from "@prototype/domain/data/file-system.mod.ts";
+} from "@workspace/domain/data/file-system.mod.ts";
 
 export async function snapshotRepo(
   alias: string,

@@ -1,3 +1,62 @@
+import { getConfig } from "@shared/config/config.mod.ts";
+
+type Shell = "zsh" | "bash" | "fish";
+
+function getCompletionPath(shell: Shell): string {
+  const home = Deno.env.get("HOME")!;
+  switch (shell) {
+    case "zsh":
+      return `${home}/.zsh/completions/_keystone`;
+    case "bash":
+      return `${home}/.local/share/bash-completion/completions/keystone`;
+    case "fish":
+      return `${home}/.config/fish/completions/keystone.fish`;
+  }
+}
+
+async function updateCompletions(): Promise<void> {
+  const config = await getConfig();
+  if (!config.completions) return;
+
+  const shells = Object.entries(config.completions)
+    .filter(([_, installed]) => installed)
+    .map(([shell]) => shell as Shell);
+
+  if (shells.length === 0) return;
+
+  console.log("\nUpdating shell completions...");
+
+  for (const shell of shells) {
+    const command = new Deno.Command("keystone", {
+      args: ["completions", shell],
+      stdout: "piped",
+      stderr: "piped",
+      env: { ...Deno.env.toObject(), NO_COLOR: "1" },
+    });
+
+    const { code, stdout } = await command.output();
+    if (code !== 0) {
+      console.log(`  ${shell}: failed to generate`);
+      continue;
+    }
+
+    let script = new TextDecoder().decode(stdout);
+    // Patch to disable colors and suppress errors - 2>/dev/null must be at END
+    script = script.replace(
+      /keystone completions complete "\$\{action\}" "\$\{@\}"/g,
+      'NO_COLOR=1 keystone completions complete "${action}" "${@}" 2>/dev/null',
+    );
+
+    const completionPath = getCompletionPath(shell);
+    try {
+      await Deno.writeTextFile(completionPath, script);
+      console.log(`  ${shell}: updated`);
+    } catch {
+      console.log(`  ${shell}: failed to write`);
+    }
+  }
+}
+
 async function getLatestVersion(): Promise<string | null> {
   const command = new Deno.Command("npm", {
     args: ["view", "@mrg-keystone/cli", "version"],
@@ -75,4 +134,6 @@ export async function updateCli(): Promise<void> {
   if (latestVersion) {
     console.log(`Now running v${latestVersion}`);
   }
+
+  await updateCompletions();
 }

@@ -31,13 +31,13 @@ export async function runDoctor(): Promise<void> {
   const config = await getConfig();
   if (!config.repoPath) {
     console.log("[ ] Repository not configured");
-    issues.push("Run 'keystone repo init' to clone the keystone-suite repositories");
-    issues.push("Or run 'keystone repo bind' if you already have keystone-suite cloned");
+    issues.push("Run 'keystone workspace init' to clone the keystone-suite repositories");
+    issues.push("Or run 'keystone workspace bind' if you already have keystone-suite cloned");
     hasIssues = true;
   } else if (!await checkDir(config.repoPath)) {
     console.log(`[ ] Repository path not found: ${config.repoPath}`);
     issues.push("The configured repo path no longer exists");
-    issues.push("Run 'keystone repo init' or 'keystone repo bind' to reconfigure");
+    issues.push("Run 'keystone workspace init' or 'keystone workspace bind' to reconfigure");
     hasIssues = true;
   } else {
     console.log(`[x] Repository configured: ${config.repoPath}`);

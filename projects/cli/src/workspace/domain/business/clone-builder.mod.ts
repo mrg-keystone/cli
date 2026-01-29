@@ -1,4 +1,4 @@
-import type { CloneRequest } from "@repo/domain/data/git-client.mod.ts";
+import type { CloneRequest } from "@workspace/domain/data/repo-git-client.mod.ts";
 
 export const REPOS = [
   "https://github.com/mrg-keystone/backend",

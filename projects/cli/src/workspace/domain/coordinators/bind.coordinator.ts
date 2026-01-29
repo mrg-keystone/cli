@@ -16,7 +16,7 @@ export async function bindRepo(): Promise<void> {
     console.error(`\nLooked in: ${Deno.cwd()}`);
     console.error("\nOptions:");
     console.error("  - Navigate to the parent folder of keystone-suite and try again");
-    console.error("  - Run 'keystone repo init' to clone a fresh copy");
+    console.error("  - Run 'keystone workspace init' to clone a fresh copy");
     Deno.exit(1);
   }
 
@@ -24,5 +24,5 @@ export async function bindRepo(): Promise<void> {
 
   console.log(`\nRepository bound successfully!`);
   console.log(`Path: ${targetDir}`);
-  console.log("\nRun 'keystone config doctor' to verify your setup.");
+  console.log("\nRun 'keystone workspace doctor' to verify your setup.");
 }

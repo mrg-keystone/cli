@@ -7,7 +7,7 @@ export async function moveRepo(newPath: string): Promise<void> {
   if (!config.repoPath) {
     console.error("No repo path configured.");
     console.error("\nTo initialize a repo, run:");
-    console.error("  keystone repo init");
+    console.error("  keystone workspace init");
     Deno.exit(1);
   }
 
@@ -19,7 +19,7 @@ export async function moveRepo(newPath: string): Promise<void> {
   } catch {
     console.error(`Source directory not found: ${config.repoPath}`);
     console.error("\nThe configured repo path no longer exists.");
-    console.error("Run 'keystone repo init' or 'keystone repo bind' to set up again.");
+    console.error("Run 'keystone workspace init' or 'keystone workspace bind' to set up again.");
     Deno.exit(1);
   }
 

@@ -11,8 +11,8 @@ export async function editConfig(): Promise<void> {
     console.error("No configuration file found.");
     console.error(`\nExpected location: ${configPath}`);
     console.error("\nTo create a config, run:");
-    console.error("  keystone repo init");
-    console.error("  keystone repo bind");
+    console.error("  keystone workspace init");
+    console.error("  keystone workspace bind");
     Deno.exit(1);
   }
 
