@@ -5,6 +5,7 @@ import { moveRepo } from "@workspace/domain/coordinators/move.coordinator.ts";
 import { snapshotRepo } from "@workspace/domain/coordinators/prototype.coordinator.ts";
 import { runDoctor } from "@workspace/domain/coordinators/doctor.coordinator.ts";
 import { editConfig } from "@workspace/domain/coordinators/config.coordinator.ts";
+import { syncRepos } from "@workspace/domain/coordinators/sync.coordinator.ts";
 import { getRepoAliases } from "@workspace/domain/business/repos.mod.ts";
 
 const aliases = getRepoAliases();
@@ -80,5 +81,14 @@ export const workspace = new Command()
       .example("Edit config", "keystone workspace config")
       .action(async () => {
         await editConfig();
+      })
+  )
+  .command(
+    "sync",
+    new Command()
+      .description("Clone any missing repos from the keystone suite")
+      .example("Sync repos", "keystone workspace sync")
+      .action(async () => {
+        await syncRepos();
       })
   );

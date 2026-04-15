@@ -1,0 +1,19 @@
+{
+  "string": { "in": "hi", "out": { "stringValue": "hi" } },
+  "integer": { "in": 3, "out": { "integerValue": "3" } },
+  "float": { "in": 3.5, "out": { "doubleValue": 3.5 } },
+  "boolean": { "in": true, "out": { "booleanValue": true } },
+  "null": { "in": null, "out": { "nullValue": null } },
+  "array": {
+    "in": [1, "a"],
+    "out": {
+      "arrayValue": {
+        "values": [{ "integerValue": "1" }, { "stringValue": "a" }]
+      }
+    }
+  },
+  "map": {
+    "in": { "a": 1 },
+    "out": { "mapValue": { "fields": { "a": { "integerValue": "1" } } } }
+  }
+}

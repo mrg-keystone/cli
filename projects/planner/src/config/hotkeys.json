@@ -1,0 +1,27 @@
+{
+  "navigation": {
+    "prevDay": ["left", "h"],
+    "nextDay": ["right", "l"],
+    "prevWeek": ["up", "k"],
+    "nextWeek": ["down", "j"],
+    "prevMonth": ["[", "<"],
+    "nextMonth": ["]", ">"],
+    "today": ["t"]
+  },
+  "actions": {
+    "quit": ["q", "escape", "ctrl_c"],
+    "addProject": ["n"],
+    "editProject": ["e"],
+    "viewProject": ["v"],
+    "deleteProject": ["d"],
+    "openNotes": ["o"],
+    "export": ["x"],
+    "save": ["s"]
+  },
+  "picker": {
+    "select": ["enter"],
+    "cancel": ["q", "escape", "ctrl_c"],
+    "prevStep": ["p"],
+    "nextStep": ["n"]
+  }
+}

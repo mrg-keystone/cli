@@ -2,27 +2,27 @@ export default async function () {
   const denoConfig = JSON.parse(await Deno.readTextFile("deno.json"));
 
   const packageJson = {
-    name: denoConfig.name ?? "@mrg-keystone/cli",
+    name: denoConfig.name ?? "@mrg-keystone/planner",
     version: denoConfig.version ?? "0.1.0",
-    bin: { keystone: "./keystone.js" },
+    bin: { planner: "./planner.js" },
     scripts: {
       postinstall: "node postinstall.js",
     },
     files: [
-      "keystone.js",
+      "planner.js",
       "postinstall.js",
-      "keystone-linux-x64",
-      "keystone-linux-arm64",
-      "keystone-darwin-x64",
-      "keystone-darwin-arm64",
-      "keystone-win-x64.exe",
+      "planner-linux-x64",
+      "planner-linux-arm64",
+      "planner-darwin-x64",
+      "planner-darwin-arm64",
+      "planner-win-x64.exe",
     ],
   };
 
   await Deno.writeTextFile("dist/package.json", JSON.stringify(packageJson, null, 2) + "\n");
 
   // Copy the bin wrapper and postinstall script
-  await Deno.copyFile("deploy/bin-wrapper.js", "dist/keystone.js");
+  await Deno.copyFile("deploy/bin-wrapper.js", "dist/planner.js");
   await Deno.copyFile("deploy/postinstall.js", "dist/postinstall.js");
 
   console.log("Generated dist/package.json");

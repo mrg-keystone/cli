@@ -7,6 +7,7 @@ export const REPOS = [
   "https://github.com/mrg-keystone/clients",
   "https://github.com/mrg-keystone/docs",
   "https://github.com/mrg-keystone/.github.git",
+  "https://github.com/mrg-keystone/external",
 ];
 
 export function extractRepoName(url: string): string {

@@ -3,6 +3,11 @@ const configPath = `${configDir}/config.json`;
 
 export interface KeystoneConfig {
   repoPath?: string;
+  completions?: {
+    zsh?: boolean;
+    bash?: boolean;
+    fish?: boolean;
+  };
 }
 
 export async function getConfig(): Promise<KeystoneConfig> {

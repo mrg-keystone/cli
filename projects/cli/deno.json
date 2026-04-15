@@ -1,7 +1,7 @@
 {
   "name": "@mrg-keystone/cli",
-  "version": "0.1.28",
-  "lock": false,
+  "version": "0.1.33",
+  "exports": "./src/bootstrap.ts",
   "tasks": {
     "keystone": "deno run -A src/bootstrap.ts",
     "deploy": "deno run -A deploy/index.ts"
@@ -15,11 +15,13 @@
     "@deploy/": "./src/deploy/",
     "@dev/": "./src/dev/",
     "@env/": "./src/env/",
+    "@external/": "./src/external/",
     "@open/": "./src/open/",
     "@plan/": "./src/plan/",
     "@shared/": "./src/shared/",
     "@update/": "./src/update/",
-    "@workspace/": "./src/workspace/"
+    "@workspace/": "./src/workspace/",
+    "@planner/": "../planner/src/"
   },
   "compilerOptions": {
     "experimentalDecorators": true,

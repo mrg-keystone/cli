@@ -1,0 +1,14 @@
+{
+  "name": "@mrg-keystone/planner",
+  "version": "0.1.2",
+  "exports": "./src/main.ts",
+  "tasks": {
+    "start": "deno run -A src/main.ts",
+    "dev": "deno run -A --watch src/main.ts",
+    "deploy": "deno run -A deploy/index.ts"
+  },
+  "imports": {
+    "#cliffy/prompt": "jsr:@cliffy/prompt@1.0.0-rc.7",
+    "yaml": "npm:yaml@2.3.4"
+  }
+}

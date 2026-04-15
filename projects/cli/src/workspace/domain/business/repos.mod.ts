@@ -3,6 +3,7 @@ export const repos = new Map<string, string>([
   ["backend", "https://github.com/mrg-keystone/backend"],
   ["ui", "https://github.com/mrg-keystone/ui"],
   ["playground", "https://github.com/mrg-keystone/playground"],
+  ["external", "https://github.com/mrg-keystone/external"],
 ]);
 
 export function getRepoUrl(alias: string): string {

@@ -1,0 +1,62 @@
+<!-- pipeline-active -->
+- [x] Scaffold project structure
+  - [x] Create `deno.json` with tasks (`test`, `check`) and imports
+  - [x] Create `src/` with module layout: `encode.ts`, `decode.ts`, `auth.ts`, `http.ts`, `ref.ts`, `firestore.ts`, `batch.ts`, `atomic.ts`, `query.ts`, `sentinels.ts`, `sample.ts`, `errors.ts`, `types.ts`, `mod.ts`
+  - [x] Add `tests/` dir with `fixtures/` subdir for JSON value-encoding fixtures
+  - [x] Verify: `deno check src/mod.ts` passes on empty exports
+- [x] Implement value encoder (JS → Firestore Value)
+  - [x] In `src/encode.ts` export `encodeValue(v: unknown): Value` and `encodeFields(o: object): { fields: Record<string, Value> }`
+  - [x] Handle string, integer vs float number, boolean, null, Date→timestampValue RFC3339, Array→arrayValue, plain object→mapValue, skip `undefined`
+  - [x] Detect `DocRef` instances and emit `referenceValue` (full path)
+  - [x] Verify: unit tests in `tests/encode.test.ts` asserting encoded JSON matches fixtures for each type
+- [x] Implement value decoder (Firestore Value → JS)
+  - [x] In `src/decode.ts` export `decodeValue(v: Value, firestore): unknown` and `decodeFields(fields, firestore): object`
+  - [x] Reverse all types; `timestampValue`→`Date`; `integerValue` string→number with warn on > MAX_SAFE_INTEGER
+  - [x] `referenceValue`→reconstructed `DocRef` via firestore handle
+  - [x] Verify: `tests/decode.test.ts` round-trips fixtures: `decode(encode(x))` equals `x`
+- [x] Implement field-transform sentinels
+  - [x] In `src/sentinels.ts` export `serverTimestamp`, `increment`, `maximum`, `minimum`, `arrayUnion`, `arrayRemove`, `deleteField` — each returning a branded sentinel object
+  - [x] In `encode.ts`, add `encodeWrite(docPath, data)` that splits sentinels out into `updateTransforms[]` and adds `deleteField` paths to `updateMask`
+  - [x] Verify: `tests/sentinels.test.ts` asserts a mixed payload produces correct `{ update, updateMask, updateTransforms }` Write shape
+- [x] Implement auth (service-account JWT + emulator bypass)
+  - [x] In `src/auth.ts` implement `signJwt(sa)` using RS256 via `crypto.subtle` importing PEM private key
+  - [x] `getAccessToken(sa)` exchanges JWT at `oauth2.googleapis.com/token` with scope `datastore`; cache until 60s before exp
+  - [x] Emulator mode: skip signing, return literal `"owner"`
+  - [x] Verify: `deno check` passes; manual test against real SA prints a token (skipped in CI)
+- [x] Implement HTTP layer with error mapping & retry
+  - [x] In `src/errors.ts` export `FirestoreError` with `status` and `code`
+  - [x] In `src/http.ts` export `request(method, path, body?)` — attaches auth header, picks base URL (prod vs emulator), parses error JSON → `FirestoreError`
+  - [x] Add exponential backoff (≤3 retries) for `ABORTED`, `UNAVAILABLE`, `DEADLINE_EXCEEDED`, 5xx
+  - [x] Verify: `tests/http.test.ts` with mocked fetch asserts retry behavior and error mapping
+- [x] Implement `Firestore`, `DocRef`, `CollectionRef` with `get`/`set`
+  - [x] In `src/ref.ts` implement `DocRef` (even segs) and `CollectionRef` (odd segs); `target(...path)` picks by parity
+  - [x] `DocRef.set(data)` → `PATCH` with `updateMask.fieldPaths=<top-level keys>`; handles sentinel transforms via single-Write `:commit` when transforms present
+  - [x] `DocRef.get()` → `GET`; 404 → `null`
+  - [x] `CollectionRef.set(data)` → `POST` auto-id; `CollectionRef.get({pageSize, pageToken})` → `{docs, nextPageToken}`
+  - [x] In `src/firestore.ts` implement `Firestore` constructor accepting `serviceAcct` and `{ emulatorPort? }`; expose `target`, `increment`, etc.
+  - [x] Verify: integration test against emulator: set then get round-trips a doc with all value types
+- [x] Implement `QueryRef` with `where`/`orderBy`/`limit`
+  - [x] In `src/query.ts` implement `QueryRef` with chainable `where`, `orderBy`, `limit`; terminal `get()`
+  - [x] Build `StructuredQuery`; call `POST :runQuery` against parent path
+  - [x] Operator map for `==`,`!=`,`<`,`<=`,`>`,`>=`,`in`,`not-in`,`array-contains`,`array-contains-any`; combine multiple `where` with AND
+  - [x] Types prevent `.set()` on `QueryRef`; runtime throws `TypeError`
+  - [x] Verify: emulator test seeds 3 docs, queries `where("age",">=",18).orderBy("createdAt","desc").limit(2)`, asserts expected ids
+- [x] Implement `WriteBatch`
+  - [x] In `src/batch.ts` implement `WriteBatch` with `target(...).set(data)` buffering Writes locally
+  - [x] `commit()` → `POST :commit` with `{ writes }` (no transaction); throw on >500 writes
+  - [x] Verify: emulator test batches 3 writes across different docs, commits, reads back
+- [x] Implement `AtomicTxn` + `runTransaction`
+  - [x] In `src/atomic.ts` implement `AtomicTxn`; first read triggers `:beginTransaction`; subsequent reads pass `transaction` token
+  - [x] Buffer writes; `commit()` → `:commit` with `{ writes, transaction }`; `rollback()` → `:rollback`
+  - [x] Enforce reads-before-writes
+  - [x] `firestore.runTransaction(cb)` retries on `ABORTED` with fresh txn (≤3)
+  - [x] Verify: emulator test increments a counter concurrently via `runTransaction` and observes retries succeed
+- [x] Implement `sample()` transitive ref hydration
+  - [x] In `src/sample.ts` implement BFS with `visited` set, draining `batchSize` paths per round via `POST :batchGet`
+  - [x] Walk each returned doc's value tree collecting `referenceValue`; respect `include` and `maxDepth`
+  - [x] Missing docs recorded as `docs[path] = null`
+  - [x] Return `{ root, docs }` flat map
+  - [x] Verify: emulator test seeds `users/u1 → orgs/acme → owners/o1`, calls `sample("users","u1")`, asserts all 3 paths present
+- [x] Wire public API & docs
+  - [x] `src/mod.ts` re-exports `Firestore`, sentinel factories, `FirestoreError`, types
+  - [x] Verify: `deno check src/mod.ts` clean; `deno test -A` green across unit + emulator suites
